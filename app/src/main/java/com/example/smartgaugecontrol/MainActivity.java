@@ -174,37 +174,28 @@ public class MainActivity extends AppCompatActivity {
         client.toAsync().subscribeWith()
                 .topicFilter(TOPIC)
                 .callback(publish -> {
-                    // Mensagem recebida
+                    // Handle MQTT message on a background thread
                     String receivedMessage = new String(publish.getPayloadAsBytes(), StandardCharsets.UTF_8);
 
-                    // Verifica se a mensagem contém o prefixo do identificador do aplicativo
-                    if (!receivedMessage.startsWith("APP_MSG:")) {
-                        // A mensagem não foi enviada pelo aplicativo, processa-a normalmente
-                        // Exibir a mensagem recebida
-                        showToast("Mensagem recebida: " + receivedMessage);
-
-                        // Parse da temperatura recebida
-                        double newTemperature = Double.parseDouble(receivedMessage);
-
-                        // Atualizar o valor do HalfGauge com a nova temperatura recebida
-                        runOnUiThread(() -> halfGauge.setValue(newTemperature));
-
-                        // Verificar a diferença entre a temperatura atual e a nova temperatura recebida
-                        double currentTemperature = halfGauge.getValue();
-                        double temperatureDifference = Math.abs(newTemperature - currentTemperature);
-
-                        // Modificar o tempo de atraso do Handler com base na diferença de temperatura
-                        int delayMillis = calculateDelayMillis(temperatureDifference);
-
-                        // Reiniciar o Handler com o novo tempo de atraso
-                        Handler handler = new Handler();
-                        handler.removeCallbacksAndMessages(null); // Remove todas as mensagens pendentes
-                        handler.postDelayed(() -> {
-                            // Ação a ser realizada após o tempo de atraso
-                            // Aqui você pode fazer qualquer coisa que desejar, com base na diferença de temperatura
-                            // Por exemplo, atualizar a interface do usuário, executar uma animação, etc.
-                        }, delayMillis);
-                    }
+                    // Processing and UI updates should be done on the main UI thread
+                    runOnUiThread(() -> {
+                        // UI-related operations here
+                        if (!receivedMessage.startsWith("APP_MSG:")) {
+                            showToast("Mensagem recebida: " + receivedMessage);
+                            double newTemperature = Double.parseDouble(receivedMessage);
+                            halfGauge.setValue(newTemperature);
+                            double currentTemperature = halfGauge.getValue();
+                            double temperatureDifference = Math.abs(newTemperature - currentTemperature);
+                            int delayMillis = calculateDelayMillis(temperatureDifference);
+                            // You can continue your UI-related operations here
+                            Handler handler = new Handler();
+                            handler.postDelayed(() -> {
+                                // Ação a ser realizada após o tempo de atraso
+                                // Aqui você pode fazer qualquer coisa que desejar, com base na diferença de temperatura
+                                // Por exemplo, atualizar a interface do usuário, executar uma animação, etc.
+                            }, delayMillis);
+                        }
+                    });
                 }).send();
     }
 
