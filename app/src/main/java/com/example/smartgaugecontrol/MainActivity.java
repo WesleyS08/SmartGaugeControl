@@ -4,7 +4,6 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -26,12 +25,7 @@ import java.nio.charset.StandardCharsets;
 public class MainActivity extends AppCompatActivity {
 
     private HalfGauge halfGauge;
-    private Button btnAumentar;
-    private Button btnDiminuir;
     private TextView textViewStatus;
-
-    private MqttClient androidClient;
-    private static final String ANDROID_MQTT_TOPIC = "BehYNK2qm%QRo5Wwm@8ouJ"; // Tópico MQTT para o servidor Android
 
     private MqttClient arduinoClient;
     private static final String ARDUINO_MQTT_TOPIC = "BehYNK2qm%QRo5Wwm@8ouJ"; // Tópico MQTT para o dispositivo Arduino
@@ -42,8 +36,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         halfGauge = findViewById(R.id.halfGauge);
-        btnAumentar = findViewById(R.id.btnAumentar);
-        btnDiminuir = findViewById(R.id.btnDiminuir);
         textViewStatus = findViewById(R.id.textViewStatus);
 
         Range range1 = new Range();
@@ -69,29 +61,9 @@ public class MainActivity extends AppCompatActivity {
         halfGauge.setMaxValue(80.0); // Valor máximo do medidor
         halfGauge.setValue(20.0); // Valor inicial do medidor
 
-        textViewStatus.setText("Conectando aos servidores MQTT...");
+        textViewStatus.setText("Conectando ao servidor MQTT...");
 
         setupArduinoMqttClient();
-
-        btnAumentar.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                aumentarTemperatura();
-                publishToAndroid();
-                publishToArduino();
-            }
-        });
-
-        btnDiminuir.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                diminuirTemperatura();
-                publishToAndroid();
-                publishToArduino();
-            }
-        });
-
-        subscribeToAndroidMqttTopic();
     }
 
     private void setupArduinoMqttClient() {
@@ -112,24 +84,22 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
                     String receivedMessage = new String(message.getPayload(), StandardCharsets.UTF_8);
-                    updateStatusText("Mensagem recebida do dispositivo Arduino: " + receivedMessage);
+                    //updateStatusText("Mensagem recebida do dispositivo Arduino: " + receivedMessage);
 
-                    // Verifique se a mensagem está no formato esperado
-                    if (receivedMessage.startsWith("APP_MSG:")) {
-                        // Extraia o valor da temperatura da mensagem
-                        String temperatureStr = receivedMessage.substring(8);
-                        try {
-                            double receivedTemperature = Double.parseDouble(temperatureStr.trim());
-                            // Atualize o valor do halfGauge
-                            runOnUiThread(() -> halfGauge.setValue(receivedTemperature));
-                            // Exiba a mensagem de atualização de temperatura
-                            showToast("Temperatura atualizada: " + receivedTemperature, 5000);
-                        } catch (NumberFormatException e) {
-                            e.printStackTrace();
-                            updateStatusText("Falha ao converter temperatura: " + temperatureStr);
+                    // Ajustar a temperatura com base no número recebido
+                    try {
+                        // Extrair o valor numérico da temperatura da mensagem
+                        String[] parts = receivedMessage.split(":");
+                        if (parts.length == 2) {
+                            double receivedTemperature = Double.parseDouble(parts[1].trim());
+                            halfGauge.setValue(receivedTemperature);
+                            updateStatusText("Temperatura ajustada: " + receivedTemperature, 5000);
+                        } else {
+                            updateStatusText("Mensagem recebida com formato inválido: " + receivedMessage);
                         }
-                    } else {
-                        updateStatusText("Mensagem recebida inválida do dispositivo Arduino: " + receivedMessage);
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                        updateStatusText("Falha ao converter temperatura: " + receivedMessage);
                     }
                 }
 
@@ -139,83 +109,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            // Inscreva-se no tópico correto para receber mensagens do Arduino
+            arduinoClient.subscribe(ARDUINO_MQTT_TOPIC);
+
             // Limpe o texto após 5 segundos
             new Handler().postDelayed(() -> textViewStatus.setText(""), 5000);
 
             updateStatusText("Conectado ao servidor MQTT (Arduino).");
         } catch (Exception e) {
             updateStatusText("Falha ao conectar ao servidor MQTT (Arduino).");
-            e.printStackTrace();
-        }
-    }
-
-
-
-    private void aumentarTemperatura() {
-        double currentValue = halfGauge.getValue();
-        double newValue = currentValue + 5.0;
-        if (newValue > halfGauge.getMaxValue()) {
-            newValue = halfGauge.getMaxValue();
-        }
-        halfGauge.setValue(newValue);
-    }
-
-    private void diminuirTemperatura() {
-        double currentValue = halfGauge.getValue();
-        double newValue = currentValue - 5.0;
-        if (newValue < halfGauge.getMinValue()) {
-            newValue = halfGauge.getMinValue();
-        }
-        halfGauge.setValue(newValue);
-    }
-
-    private void publishToAndroid() {
-        try {
-            if (androidClient != null && androidClient.isConnected()) {
-                String message = "APP_MSG:" + halfGauge.getValue();
-                androidClient.publish(ANDROID_MQTT_TOPIC, message.getBytes(), 0, false);
-                updateStatusText("Temperatura enviada para o servidor MQTT (Android): " + halfGauge.getValue());
-                // Exibe a mensagem por 5 segundos
-                showToast("Temperatura enviada para o servidor MQTT (Android): " + halfGauge.getValue(), 5000);
-            }
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private double lastSentTemperature = 0.0;
-
-    private void publishToArduino() {
-        try {
-            if (arduinoClient != null && arduinoClient.isConnected()) {
-                String message = "APP_MSG: " + halfGauge.getValue();
-                arduinoClient.publish(ARDUINO_MQTT_TOPIC, message.getBytes(), 0, false);
-                lastSentTemperature = halfGauge.getValue(); // Armazena a última temperatura enviada
-                updateStatusText("Temperatura enviada para o dispositivo Arduino: " + lastSentTemperature, 5000);
-                // Exibe a mensagem por 5 segundos
-                //showToast("Temperatura enviada para o dispositivo Arduino: " + lastSentTemperature, 5000);
-            }
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateStatusText(String message, int duration) {
-        runOnUiThread(() -> {
-            textViewStatus.setText(message);
-            // Define um atraso antes de limpar o texto
-            new Handler().postDelayed(() -> textViewStatus.setText(""), duration);
-        });
-    }
-
-
-
-    private void subscribeToAndroidMqttTopic() {
-        try {
-            if (androidClient != null && androidClient.isConnected()) {
-                androidClient.subscribe(ANDROID_MQTT_TOPIC, 0);
-            }
-        } catch (MqttException e) {
             e.printStackTrace();
         }
     }
@@ -238,9 +140,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         try {
-            if (androidClient != null && androidClient.isConnected()) {
-                androidClient.disconnect();
-            }
             if (arduinoClient != null && arduinoClient.isConnected()) {
                 arduinoClient.disconnect();
             }
