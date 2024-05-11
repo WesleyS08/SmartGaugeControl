@@ -13,9 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.ekn.gruzer.gaugelibrary.HalfGauge;
 import com.ekn.gruzer.gaugelibrary.Range;
 
-import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
-import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttCallback;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
@@ -49,31 +47,30 @@ public class MainActivity extends AppCompatActivity {
         textViewStatus = findViewById(R.id.textViewStatus);
 
         Range range1 = new Range();
-        range1.setColor(Color.parseColor("#0000FF"));
-        range1.setFrom(0.0);
-        range1.setTo(15.0);
+        range1.setColor(Color.parseColor("#0000FF")); // Cor para ambiente frio
+        range1.setFrom(-40.0); // Começa em -40
+        range1.setTo(0.0); // Termina em 0
 
         Range range2 = new Range();
-        range2.setColor(Color.parseColor("#008000"));
-        range2.setFrom(15.0);
-        range2.setTo(25.0);
+        range2.setColor(Color.parseColor("#008000")); // Cor para temperatura agradável
+        range2.setFrom(0.0); // Começa em 0
+        range2.setTo(40.0); // Termina em 40
 
         Range range3 = new Range();
-        range3.setColor(Color.parseColor("#FF0000"));
-        range3.setFrom(25.0);
-        range3.setTo(40.0);
+        range3.setColor(Color.parseColor("#FF0000")); // Cor para calor
+        range3.setFrom(40.0); // Começa em 40
+        range3.setTo(80.0); // Termina em 80
 
         halfGauge.addRange(range1);
         halfGauge.addRange(range2);
         halfGauge.addRange(range3);
 
-        halfGauge.setMinValue(0.0);
-        halfGauge.setMaxValue(40.0);
-        halfGauge.setValue(20.0);
+        halfGauge.setMinValue(-40.0); // Valor mínimo do medidor
+        halfGauge.setMaxValue(80.0); // Valor máximo do medidor
+        halfGauge.setValue(20.0); // Valor inicial do medidor
 
         textViewStatus.setText("Conectando aos servidores MQTT...");
 
-        setupAndroidMqttClient();
         setupArduinoMqttClient();
 
         btnAumentar.setOnClickListener(new View.OnClickListener() {
@@ -97,43 +94,6 @@ public class MainActivity extends AppCompatActivity {
         subscribeToAndroidMqttTopic();
     }
 
-    private void setupAndroidMqttClient() {
-        try {
-            String clientId = MqttClient.generateClientId();
-            androidClient = new MqttClient("tcp://c023193fa6834fdaa25f0b48c176dd69.s1.eu.hivemq.cloud:8883", clientId, new MemoryPersistence());
-
-            MqttConnectOptions options = new MqttConnectOptions();
-            options.setCleanSession(true);
-            options.setUserName("Wesley1.0");
-            options.setPassword("Ws58247889!".toCharArray());
-
-            androidClient.connect(options);
-            androidClient.setCallback(new MqttCallback() {
-                @Override
-                public void connectionLost(Throwable cause) {
-                    textViewStatus.setText("Conexão MQTT (Android) perdida.");
-                }
-
-                @Override
-                public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    double newTemperature = Double.parseDouble(new String(message.getPayload()));
-                    halfGauge.setValue(newTemperature);
-                    updateStatusText("Temperatura recebida do servidor MQTT (Android): " + newTemperature);
-                }
-
-                @Override
-                public void deliveryComplete(IMqttDeliveryToken token) {
-                    // Not needed in this case
-                }
-            });
-            textViewStatus.setText("Conectado ao servidor MQTT (Android).");
-        } catch (Exception e) {
-            textViewStatus.setText("Falha ao conectar ao servidor MQTT (Android).");
-            e.printStackTrace();
-        }
-    }
-
-
     private void setupArduinoMqttClient() {
         try {
             String clientId = MqttClient.generateClientId();
@@ -146,25 +106,50 @@ public class MainActivity extends AppCompatActivity {
             arduinoClient.setCallback(new MqttCallback() {
                 @Override
                 public void connectionLost(Throwable cause) {
-                    textViewStatus.append("\nConexão MQTT (Arduino) perdida.");
+                    updateStatusText("Conexão MQTT (Arduino) perdida.");
                 }
 
                 @Override
                 public void messageArrived(String topic, MqttMessage message) throws Exception {
-                    textViewStatus.append("\nMensagem recebida do dispositivo Arduino: " + new String(message.getPayload()));
+                    String receivedMessage = new String(message.getPayload(), StandardCharsets.UTF_8);
+                    updateStatusText("Mensagem recebida do dispositivo Arduino: " + receivedMessage);
+
+                    // Verifique se a mensagem está no formato esperado
+                    if (receivedMessage.startsWith("APP_MSG:")) {
+                        // Extraia o valor da temperatura da mensagem
+                        String temperatureStr = receivedMessage.substring(8);
+                        try {
+                            double receivedTemperature = Double.parseDouble(temperatureStr.trim());
+                            // Atualize o valor do halfGauge
+                            runOnUiThread(() -> halfGauge.setValue(receivedTemperature));
+                            // Exiba a mensagem de atualização de temperatura
+                            showToast("Temperatura atualizada: " + receivedTemperature, 5000);
+                        } catch (NumberFormatException e) {
+                            e.printStackTrace();
+                            updateStatusText("Falha ao converter temperatura: " + temperatureStr);
+                        }
+                    } else {
+                        updateStatusText("Mensagem recebida inválida do dispositivo Arduino: " + receivedMessage);
+                    }
                 }
 
                 @Override
                 public void deliveryComplete(IMqttDeliveryToken token) {
-                    // Not needed in this case
+                    // Não é necessário neste caso
                 }
             });
-            textViewStatus.append("\nConectado ao servidor MQTT (Arduino).");
+
+            // Limpe o texto após 5 segundos
+            new Handler().postDelayed(() -> textViewStatus.setText(""), 5000);
+
+            updateStatusText("Conectado ao servidor MQTT (Arduino).");
         } catch (Exception e) {
-            textViewStatus.append("\nFalha ao conectar ao servidor MQTT (Arduino).");
+            updateStatusText("Falha ao conectar ao servidor MQTT (Arduino).");
             e.printStackTrace();
         }
     }
+
+
 
     private void aumentarTemperatura() {
         double currentValue = halfGauge.getValue();
@@ -190,23 +175,40 @@ public class MainActivity extends AppCompatActivity {
                 String message = "APP_MSG:" + halfGauge.getValue();
                 androidClient.publish(ANDROID_MQTT_TOPIC, message.getBytes(), 0, false);
                 updateStatusText("Temperatura enviada para o servidor MQTT (Android): " + halfGauge.getValue());
+                // Exibe a mensagem por 5 segundos
+                showToast("Temperatura enviada para o servidor MQTT (Android): " + halfGauge.getValue(), 5000);
             }
         } catch (MqttException e) {
             e.printStackTrace();
         }
     }
 
+    private double lastSentTemperature = 0.0;
+
     private void publishToArduino() {
         try {
             if (arduinoClient != null && arduinoClient.isConnected()) {
-                String message = "Temperature: " + halfGauge.getValue();
+                String message = "APP_MSG: " + halfGauge.getValue();
                 arduinoClient.publish(ARDUINO_MQTT_TOPIC, message.getBytes(), 0, false);
-                updateStatusText("Temperatura enviada para o dispositivo Arduino: " + halfGauge.getValue());
+                lastSentTemperature = halfGauge.getValue(); // Armazena a última temperatura enviada
+                updateStatusText("Temperatura enviada para o dispositivo Arduino: " + lastSentTemperature, 5000);
+                // Exibe a mensagem por 5 segundos
+                //showToast("Temperatura enviada para o dispositivo Arduino: " + lastSentTemperature, 5000);
             }
         } catch (MqttException e) {
             e.printStackTrace();
         }
     }
+
+    private void updateStatusText(String message, int duration) {
+        runOnUiThread(() -> {
+            textViewStatus.setText(message);
+            // Define um atraso antes de limpar o texto
+            new Handler().postDelayed(() -> textViewStatus.setText(""), duration);
+        });
+    }
+
+
 
     private void subscribeToAndroidMqttTopic() {
         try {
@@ -222,8 +224,14 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(() -> textViewStatus.append("\n" + message));
     }
 
-    private void showToast(String message) {
-        runOnUiThread(() -> Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT).show());
+    private void showToast(String message, int duration) {
+        runOnUiThread(() -> {
+            Toast toast = Toast.makeText(MainActivity.this, message, Toast.LENGTH_SHORT);
+            toast.show();
+
+            // Define um atraso antes de cancelar o Toast
+            new Handler().postDelayed(toast::cancel, duration);
+        });
     }
 
     @Override
