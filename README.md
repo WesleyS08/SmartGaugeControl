@@ -1,5 +1,5 @@
 
-# 🌦️ SmartGaugeControl
+# 📊 SmartGaugeControl
 
 Este projeto é uma solução completa para o monitoramento de temperatura, utilizando um sofisticado gráfico de medidor (Gauge Chart) como interface de visualização. O dispositivo principal é um ESP32, que se conecta a um servidor MQTT para receber informações em tempo real sobre a temperatura simulada.
 
