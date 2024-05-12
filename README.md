@@ -134,8 +134,8 @@ Apos essa breve configuração podemos definir de fato o Gauge Chart seguindo o 
 esse é um exempro do projeto funcionadno 
 
 
-<video controls src="img/Screen-Recording-_12-05-2024-00-00-46_Screen-Recording-_12-05-2024-00-00-46_Screen-Recording-_12-05-2024-00-00-46.mp4" title="Title"></video>
 
+https://github.com/WesleyS08/SmartGaugeControl/assets/113936684/53243e08-62ae-4adc-8154-5d221799128b
 
 
 
