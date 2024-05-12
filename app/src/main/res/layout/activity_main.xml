@@ -7,7 +7,19 @@
     android:background="#9F9F9F"
     tools:context=".MainActivity">
 
+    <!-- Adicionando uma ImageView para a imagem -->
+
     <!-- HalfGauge -->
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="5dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/sua_imagem" />
+
     <com.ekn.gruzer.gaugelibrary.HalfGauge
         android:id="@+id/halfGauge"
         android:layout_width="200dp"
@@ -41,7 +53,7 @@
         android:layout_marginTop="16dp"
         android:layout_marginEnd="32dp"
         android:backgroundTint="#1E90FF"
-        android:text=" - Diminuir" />
+        android:text="- Diminuir" />
 
     <!-- TextView para exibir mensagens recebidas -->
     <TextView

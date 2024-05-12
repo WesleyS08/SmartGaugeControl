@@ -246,7 +246,7 @@ public class MainActivity extends AppCompatActivity {
     // Método para definir um valor inicial aleatório dentro do intervalo permitido (-40 a 80) com até duas casas decimais
     private double setInitialRandomGaugeValue() {
         Random random = new Random();
-        double randomValue = Math.round((random.nextDouble() * (80.0 - (-40.0)) + (-40.0)) * 100.0) / 100.0; // Gera um valor aleatório entre -40 e 80 com até duas casas decimais
+        double randomValue = random.nextDouble() * (80.0 - (-40.0)) + (-40.0); // Gera um valor aleatório entre -40 e 80
         updateGaugeValue(randomValue);
         return randomValue;
     }
@@ -259,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
 
     // Atualiza o valor do TextView
     private void updateGaugeValue(double value) {
-        double formattedValue = Double.parseDouble(decimalFormat.format(value)); // Formata o valor com até duas casas decimais
+        double formattedValue = Double.parseDouble(decimalFormat.format(value).replace(',', '.')); // Substitui a vírgula por ponto
         halfGauge.setValue(formattedValue);
     }
 
