@@ -124,10 +124,10 @@ Apos essa breve configuração podemos definir de fato o Gauge Chart seguindo o 
 ```
 ## Projeto
 
-![Arduino](/img/arduino)
+![Arduino](/img/arduino.png)
 
 
-![server](/img/server)
+![server](/img/server.png)
 
 ## Rodando os testes
 
