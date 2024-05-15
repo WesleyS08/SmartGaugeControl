@@ -131,7 +131,7 @@ Apos essa breve configuração podemos definir de fato o Gauge Chart seguindo o 
 
 ## Rodando os testes
 
-esse é um exempro do projeto funcionadno 
+esse é um exempro do projeto funcionando  
 
 
 
