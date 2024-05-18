@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#9F9F9F"
+    tools:context=".MainActivity">
+
+    <!-- Adicionando uma ImageView para a imagem -->
+
+    <!-- HalfGauge -->
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:layout_alignParentTop="true"
+        android:layout_marginTop="5dp"
+        android:scaleType="centerInside"
+        android:src="@drawable/sua_imagem" />
+
+    <com.ekn.gruzer.gaugelibrary.HalfGauge
+        android:id="@+id/halfGauge"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:layout_centerInParent="true" />
+
+    <!-- Botão para aumentar a temperatura -->
+    <Button
+        android:id="@+id/btnAumentar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/halfGauge"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:backgroundTint="#FF4500"
+        android:text="+ Aumentar" />
+
+
+    <!-- Botão para diminuir a temperatura -->
+    <Button
+        android:id="@+id/btnDiminuir"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnAumentar"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="32dp"
+        android:backgroundTint="#1E90FF"
+        android:text="- Diminuir" />
+
+    <!-- TextView para exibir mensagens recebidas -->
+    <TextView
+        android:id="@+id/textViewStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/btnDiminuir"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:textSize="16sp"
+        android:textColor="#000000"/>
+
+</RelativeLayout>

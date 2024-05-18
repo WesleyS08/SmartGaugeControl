@@ -1,0 +1,46 @@
+name: Android CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:  # Para permitir execução manual
+
+jobs:
+  build:  # Primeiro job, chamado "build"
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4  # Faz o checkout do código
+    - name: Setup JDK 17  # Configura JDK 17
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+    
+    - name: Grant execute permission for gradlew  # Permite execução do Gradlew
+      run: chmod +x ./gradlew  # Garante permissão de execução
+    
+    - name: Build with Gradle  # Compila o projeto Android
+      run: ./gradlew build
+
+  test:  # Segundo job, chamado "test"
+    needs: build  # "test" depende do "build"
+    runs-on: ubuntu-latest  # Ambiente do runner
+    
+    steps:
+    - uses: actions/checkout@v4  # Faz o checkout do código novamente (por segurança)
+    - name: Setup JDK 17  # Configura JDK 17 para o Android
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        cache: gradle
+    
+    - name: Grant execute permission for gradlew  # Dá permissão de execução ao Gradlew
+      run: chmod +x ./gradlew
+    
+    - name: Run Unit Tests  # Executa testes unitários
+      run: ./gradlew test

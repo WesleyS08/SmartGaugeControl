@@ -126,7 +126,6 @@ Apos essa breve configuração podemos definir de fato o Gauge Chart seguindo o 
 
 ![Arduino](/img/arduino.png)
 
-
 ![server](/img/server.png)
 
 ## Rodando os testes
@@ -138,7 +137,10 @@ esse é um exempro do projeto funcionando
 https://github.com/WesleyS08/SmartGaugeControl/assets/113936684/53243e08-62ae-4adc-8154-5d221799128b
 
 
+## Rodando os testes em um Habiente Real
 
+
+![server](/img/IMG_20240518_200257_076_LL.jpg)
 ## Referência
 
 - Documentação do Simple Gauge Android: Documentação oficial do [Simple Gauge Android](https://github.com/Gruzer/simple-gauge-android), uma biblioteca utilizada neste projeto para criar o gráfico de medidor.

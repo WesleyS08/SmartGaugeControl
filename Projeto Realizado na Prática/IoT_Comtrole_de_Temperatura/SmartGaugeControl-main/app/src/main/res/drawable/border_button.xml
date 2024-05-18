@@ -1,0 +1,9 @@
+<!-- border_button.xml -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Camada para o fundo laranja -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#FF4500"/> <!-- Cor de fundo do botão -->
+        </shape>
+    </item>
+</layer-list>
