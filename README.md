@@ -141,6 +141,12 @@ https://github.com/WesleyS08/SmartGaugeControl/assets/113936684/53243e08-62ae-4a
 
 
 ![server](/img/IMG_20240518_200257_076_LL.jpg)
+
+
+
+https://github.com/WesleyS08/SmartGaugeControl/assets/113936684/ff0e1c9e-b738-4a15-abb7-053a3a0f88c7
+
+
 ## Referência
 
 - Documentação do Simple Gauge Android: Documentação oficial do [Simple Gauge Android](https://github.com/Gruzer/simple-gauge-android), uma biblioteca utilizada neste projeto para criar o gráfico de medidor.
