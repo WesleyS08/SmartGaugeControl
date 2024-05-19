@@ -11,8 +11,8 @@
 #define INTERVALO_LEITURA 600
 #define MAX_CONSECUTIVE_FAILURES 3
 
-const char* ssid = "LIVE TIM_0C19_2G";
-const char* password = "2f5r2pmppenr7u46";
+const char* ssid = "Sua rede ";
+const char* password = "Sua senha";
 const char* mqtt_server = "public.mqtthq.com";
 const char* mqtt_username = "";
 const char* mqtt_password = "";
